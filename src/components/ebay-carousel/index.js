@@ -26,10 +26,12 @@ function getInitialState(input) {
         }))
     };
 
-    // Remove any extra items when using explicit itemsPerSlide.
     const { items, itemsPerSlide } = state;
     if (itemsPerSlide) {
+        // Remove any extra items when using explicit itemsPerSlide.
         items.length -= items.length % itemsPerSlide;
+        // Only allow infinite option for discrete carousels.
+        state.infinite = input.infinite;
     }
 
     return state;
@@ -43,8 +45,8 @@ function getTemplateData(state) {
     index -= index % (itemsPerSlide || 1); // Round index to the nearest valid slide index.
     index = state.index = Math.abs(index); // Ensure positive and save back to state.
     const offset = getOffset(state);
-    const prevControlDisabled = offset === 0;
-    const nextControlDisabled = offset === getMaxOffset(state);
+    const prevControlDisabled = !state.infinite && offset === 0;
+    const nextControlDisabled = !state.infinite && offset === getMaxOffset(state);
     const bothControlsDisabled = prevControlDisabled && nextControlDisabled;
     let slide, itemWidth, totalSlides, accessibilityStatus;
 
@@ -95,41 +97,44 @@ function getTemplateData(state) {
 }
 
 function init() {
-    this.listEl = this.getEl('list');
+    const { state: { config } } = this;
+    const listEl = this.listEl = this.getEl('list');
     this.containerEl = this.getEl('container');
     this.subscribeTo(resizeUtil).on('resize', onRender.bind(this));
     observer.observeRoot(this, ['index']);
 
-    if (getComputedStyle(this.listEl).getPropertyValue('overflow-x') !== 'visible') {
-        this.state.config.nativeScrolling = true;
-        this.cancelScrollHandler = onScrollEnd(this.listEl, handleScrollEnd.bind(this));
+    if (getComputedStyle(listEl).getPropertyValue('overflow-x') !== 'visible') {
+        config.nativeScrolling = true;
+        this.cancelScrollHandler = onScrollEnd(listEl, handleScrollEnd.bind(this));
     } else {
-        this.subscribeTo(this.listEl).on('transitionend', this.emitUpdate.bind(this));
+        this.subscribeTo(listEl).on('transitionend', this.emitUpdate.bind(this));
     }
 }
 
 function onRender() {
+    const { listEl, state } = this;
+    const { config } = state;
+
     // Stop scrolling if we were already moving.
     if (this.cancelScrollTransition) {
         this.cancelScrollTransition();
         this.cancelScrollTransition = undefined;
     }
 
-    if (this.state.config.preserveItems) {
+    if (config.preserveItems) {
         // Track if we are on a normal render or a render caused by recalculating.
-        this.state.config.preserveItems = false;
+        config.preserveItems = false;
 
         // Ensure only visible items within the carousel are focusable.
         // We don't have access to these items in the template so me must update manually.
-        forEls(this.listEl, itemEl => {
+        forEls(listEl, itemEl => {
             focusables(itemEl).forEach(itemEl.getAttribute('aria-hidden') !== 'true'
                 ? child => child.removeAttribute('tabindex')
                 : child => child.setAttribute('tabindex', '-1')
             );
         });
 
-        if (this.state.config.nativeScrolling) {
-            const { listEl, state } = this;
+        if (config.nativeScrolling) {
             const offset = getOffset(state);
             // Animate to the new scrolling position and emit update events afterward.
             this.cancelScrollTransition = scrollTransition(listEl, offset, () => {
@@ -149,7 +154,7 @@ function onRender() {
         // if we cannot divide up the slides evenly.
         if (itemsPerSlide && slideWidth % itemsPerSlide !== 0) slideWidth++;
         this.setState('slideWidth', slideWidth);
-        this.state.config.preserveItems = true;
+        config.preserveItems = true;
 
         // Update item positions in the dom.
         forEls(this.listEl, (itemEl, i) => {
@@ -182,14 +187,49 @@ function emitUpdate() {
  * @param {HTMLElement} target
  */
 function handleMove(originalEvent, target) {
-    const { state: { itemsPerSlide } } = this;
+    const { state: { items, itemsPerSlide, infinite, slideWidth, config }, listEl } = this;
+    const LEFT = -1;
+    const RIGHT = 1;
     const direction = parseInt(target.getAttribute('data-direction'), 10);
     const nextIndex = this.getNextIndex(direction);
     const slide = itemsPerSlide && Math.ceil(nextIndex / itemsPerSlide);
-    this.state.config.preserveItems = true;
-    this.setState('index', nextIndex);
-    emitAndFire(this, 'carousel-slide', { slide: slide + 1, originalEvent });
-    emitAndFire(this, `carousel-${direction === 1 ? 'next' : 'prev'}`, { originalEvent });
+    const goToSlide = () => {
+        config.preserveItems = true;
+        this.setState('index', nextIndex);
+        emitAndFire(this, 'carousel-slide', { slide: slide + 1, originalEvent });
+        emitAndFire(this, `carousel-${direction === 1 ? 'next' : 'prev'}`, { originalEvent });
+    };
+
+    // When we are in infinite mode we overshoot the desired index to land on a clone
+    // of one of the ends. Then after the transition is over we update to the proper position.
+    if (infinite) {
+        if (config.disableTransition) return;
+        let overrideOffset;
+
+        if (direction === RIGHT && nextIndex === 0) {
+            const { lastElementChild } = listEl;
+            overrideOffset = lastElementChild.offsetLeft + lastElementChild.offsetWidth - slideWidth;
+        } else if (direction === LEFT && slide === Math.ceil(items.length / itemsPerSlide)) {
+            overrideOffset = 0;
+        }
+
+        if (overrideOffset !== undefined) {
+            const { style } = listEl;
+            style.transform = `translate3d(-${overrideOffset}px,0,0)`;
+            this.subscribeTo(listEl).once('transitionend', () => {
+                config.disableTransition = true;
+                goToSlide();
+                this.once('update', () => requestAnimationFrame(() => requestAnimationFrame(() => {
+                    config.disableTransition = false;
+                    style.transition = null;
+                })));
+            });
+        } else {
+            goToSlide();
+        }
+    } else {
+        goToSlide();
+    }
 }
 
 /**
@@ -199,9 +239,9 @@ function handleMove(originalEvent, target) {
  * @param {HTMLElement} target
  */
 function handleDotClick(originalEvent, target) {
-    const { state: { itemsPerSlide } } = this;
+    const { state: { itemsPerSlide, config } } = this;
     const slide = parseInt(target.getAttribute('data-slide'), 10);
-    this.state.config.preserveItems = true;
+    config.preserveItems = true;
     this.setState('index', slide * itemsPerSlide);
     emitAndFire(this, 'carousel-slide', { slide: slide + 1, originalEvent });
 }
@@ -212,7 +252,7 @@ function handleDotClick(originalEvent, target) {
  * @param {number} scrollLeft The current scroll position of the carousel.
  */
 function handleScrollEnd(scrollLeft) {
-    const { state: { items } } = this;
+    const { state: { items, config } } = this;
 
     // Find the closest item using a binary search.
     let start = 0;
@@ -244,7 +284,7 @@ function handleScrollEnd(scrollLeft) {
     }
 
     // Always update with the new index to ensure the scroll animations happen.
-    this.state.config.preserveItems = true;
+    config.preserveItems = true;
     this.setStateDirty('index', closest);
 }
 
@@ -311,7 +351,9 @@ function forEls(parent, fn) {
     let i = 0;
     let child = parent.firstElementChild;
     while (child) {
-        fn(child, i++);
+        if (!child.hasAttribute('data-clone')) {
+            fn(child, i++);
+        }
         child = child.nextElementSibling;
     }
 }

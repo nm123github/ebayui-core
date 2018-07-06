@@ -29,6 +29,7 @@ Name | Type | Stateful | Description
 `accessibility-status` | String | No | status text (default: "Showing Slide {currentSlide} of {totalSlides} - Carousel")
 `accessibility-current` | String | No | pagination current slide text (default: "Current Slide {currentSlide} - Carousel")
 `accessibility-other` | String | No | pagination other slide text (default: "Slide {slide} - Carousel")
+`infinite` | Boolean | No | causes the carousel to continue to the next index at the ends by moving in the same direction
 
 ## ebay-carousel Events
 Event | Data | Description

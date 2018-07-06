@@ -20,14 +20,42 @@
         </button>
         <ul w-id="list"
             class="carousel__list"
-            style={transform: !config.nativeScrolling && "translate3d(-" + data.offset + "px,0,0)"}>
-            <for(index, item in data.items)>
+            style={
+                transform: !config.nativeScrolling && "translate3d(-" + data.offset + "px,0,0)",
+                transition: config.disableTransition ? 'none' : undefined
+            }>
+
+            <if(data.infinite)>
+                <for(i from data.items.length - data.itemsPerSlide to data.items.length - 1)>
+                    <var item=data.items[i]/>
+                    <li ${item.htmlAttributes}
+                        data-clone
+                        style=item.style
+                        aria-hidden="true"
+                        w-body=item.renderBody
+                        w-preserve-body-if(config.preserveItems)/>
+                </for>
+            </if>
+
+            <for(item in data.items)>
                 <li ${item.htmlAttributes}
                     style=item.style
                     w-body=item.renderBody
                     aria-hidden=(!item.fullyVisible && 'true')
                     w-preserve-body-if(config.preserveItems)/>
             </for>
+
+            <if(data.infinite)>
+                <for(i from 0 to data.itemsPerSlide - 1)>
+                    <var item=data.items[i]/>
+                    <li ${item.htmlAttributes}
+                        data-clone
+                        style=item.style
+                        aria-hidden="true"
+                        w-body=item.renderBody
+                        w-preserve-body-if(config.preserveItems)/>
+                </for>
+            </if>
         </ul>
         <button
             class="carousel__control carousel__control--next"
