@@ -11,8 +11,8 @@
     "**/*.marko.js",
     "src/common/test-utils"
   ],
-  "sourceMap": false,
-  "instrument": false,
+  "sourceMap": true,
+  "instrument": true,
   "report-dir": "./.coverage",
   "all": true,
   "reporter": [

@@ -1,18 +1,12 @@
 'use strict';
 
 const isTravis = require('is-travis');
-process.env.NODE_ENV = 'test';
 
 module.exports = ({ config }) => {
     config.mochaOptions = { timeout: 20000 };
     config.lassoOptions = {
         flags: ['skin-ds6'],
-        plugins: ['lasso-less'],
-        require: {
-            transforms: [{
-                transform: 'lasso-babel-transform'
-            }]
-        }
+        plugins: ['lasso-less']
     };
 
     config.wdioOptions = {
