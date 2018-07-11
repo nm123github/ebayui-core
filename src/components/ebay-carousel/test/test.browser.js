@@ -72,12 +72,9 @@ describe('given the carousel starts in the default state with items', () => {
     afterEach(() => widget.destroy());
 
     describe('when index is updated programmatically', () => {
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             widget.subscribeTo(list).once('transitionend', done);
             root.index = 1;
@@ -103,12 +100,9 @@ describe('given the carousel starts in the default state with items', () => {
 
     // simulate parent state change
     describe('when index is updated via state', () => {
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             widget.subscribeTo(list).once('transitionend', done);
             widget.setState('index', 1);
@@ -148,14 +142,11 @@ describe('given the carousel starts in the default state with items', () => {
 
     describe('when next button is clicked', () => {
         let nextSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             nextSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-next', nextSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             widget.subscribeTo(list).once('transitionend', done);
             testUtils.triggerEvent(nextButton, 'click');
@@ -181,12 +172,9 @@ describe('given the carousel starts in the default state with items', () => {
     });
 
     describe('when index is set below zero', () => {
-        let moveSpy;
         let updateSpy;
         beforeEach((done) => {
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             widget.subscribeTo(list).once('transitionend', done);
             root.index = -1;
@@ -202,12 +190,9 @@ describe('given the carousel starts in the default state with items', () => {
     });
 
     describe('when index is set above the number of items', () => {
-        let moveSpy;
         let updateSpy;
         beforeEach((done) => {
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             root.index = 6;
             delay(done);
@@ -249,14 +234,11 @@ describe('given a continuous carousel has next button clicked', () => {
 
     describe('when the previous button is clicked', () => {
         let prevSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             prevSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-prev', prevSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             widget.subscribeTo(list).once('transitionend', done);
             testUtils.triggerEvent(prevButton, 'click');
@@ -277,14 +259,11 @@ describe('given a continuous carousel has next button clicked', () => {
 
     describe('when the next button is clicked while disabled', () => {
         let nextSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             nextSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-next', nextSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             testUtils.triggerEvent(nextButton, 'click');
             delay(done);
@@ -312,13 +291,10 @@ describe('given a continuous carousel with few items', () => {
     afterEach(() => widget.destroy());
 
     describe('when index is set', () => {
-        let moveSpy;
         let updateSpy;
         beforeEach(() => {
             expect(getTranslateX(list)).to.equal(0);
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             root.index = 1;
         });
@@ -349,15 +325,12 @@ describe('given a continuous carousel with many items', () => {
 
     describe('when next button is clicked three times', () => {
         let nextSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             const listSub = widget.subscribeTo(list);
             nextSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-next', nextSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             testUtils.triggerEvent(nextButton, 'click');
             listSub.once('transitionend', () => {
@@ -384,17 +357,14 @@ describe('given a continuous carousel with many items', () => {
     describe('when next button is clicked three times, and previous button is clicked once', () => {
         let prevSpy;
         let nextSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             const listSub = widget.subscribeTo(list);
             prevSpy = sinon.spy();
             nextSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-prev', prevSpy);
             widget.on('carousel-next', nextSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             testUtils.triggerEvent(nextButton, 'click');
             listSub.once('transitionend', () => {
@@ -426,17 +396,14 @@ describe('given a continuous carousel with many items', () => {
     describe('when next button is clicked twice, and previous button is clicked once', () => {
         let prevSpy;
         let nextSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             const listSub = widget.subscribeTo(list);
             prevSpy = sinon.spy();
             nextSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-prev', prevSpy);
             widget.on('carousel-next', nextSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             listSub.once('transitionend', () => {
                 listSub.once('transitionend', () => {
@@ -479,16 +446,13 @@ describe('given a discrete carousel', () => {
     describe('when next button is clicked', () => {
         let nextSpy;
         let slideSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             nextSpy = sinon.spy();
             slideSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-next', nextSpy);
             widget.on('carousel-slide', slideSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             widget.subscribeTo(list).once('transitionend', done);
             testUtils.triggerEvent(nextButton, 'click');
@@ -563,16 +527,13 @@ describe('given a discrete carousel has next button clicked', () => {
     describe('when the previous button is clicked', () => {
         let prevSpy;
         let slideSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             prevSpy = sinon.spy();
             slideSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-prev', prevSpy);
             widget.on('carousel-slide', slideSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             widget.subscribeTo(list).once('transitionend', done);
             testUtils.triggerEvent(prevButton, 'click');
@@ -625,16 +586,13 @@ describe('given a discrete carousel with half width items', () => {
     describe('when next button is clicked', () => {
         let nextSpy;
         let slideSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             nextSpy = sinon.spy();
             slideSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-next', nextSpy);
             widget.on('carousel-slide', slideSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             testUtils.triggerEvent(nextButton, 'click');
             widget.subscribeTo(list).once('transitionend', done);
@@ -669,16 +627,13 @@ describe('given a discrete carousel with half width items', () => {
     describe('when next slide dot is clicked', () => {
         let nextSpy;
         let slideSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             nextSpy = sinon.spy();
             slideSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-next', nextSpy);
             widget.on('carousel-slide', slideSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             testUtils.triggerEvent(nextSlideDot, 'click');
             widget.subscribeTo(list).once('transitionend', done);
@@ -715,16 +670,13 @@ describe('given a discrete carousel with half width items', () => {
     describe('when index is updated programmatically', () => {
         let nextSpy;
         let slideSpy;
-        let moveSpy;
         let updateSpy;
         beforeEach(done => {
             nextSpy = sinon.spy();
             slideSpy = sinon.spy();
-            moveSpy = sinon.spy();
             updateSpy = sinon.spy();
             widget.on('carousel-next', nextSpy);
             widget.on('carousel-slide', slideSpy);
-            widget.on('carousel-move', moveSpy);
             widget.on('carousel-update', updateSpy);
             root.index = 4;
             widget.subscribeTo(list).once('transitionend', done);
