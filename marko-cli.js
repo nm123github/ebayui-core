@@ -17,6 +17,7 @@ module.exports = ({ config }) => {
     config.wdioOptions = {
         idleTimeout: 1200000, // 20 mins
         browserStackOptions: {
+            force: true,
             onlyAutomate: isTravis
         },
         capabilities: [{
