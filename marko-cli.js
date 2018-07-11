@@ -6,19 +6,16 @@ module.exports = ({ config }) => {
     config.mochaOptions = { timeout: 20000 };
     config.lassoOptions = {
         flags: ['skin-ds6'],
-        plugins: ['lasso-less'],
-        require: {
-            transforms: [{
-                transform: 'lasso-babel-transform'
-            }]
-        }
+        plugins: ['lasso-less']
     };
 
     config.wdioOptions = {
         idleTimeout: 1200000, // 20 mins
         browserStackOptions: {
             force: true,
-            onlyAutomate: isTravis
+            onlyAutomate: isTravis,
+            browserstackLocalForcedStop: true,
+            localIdentifier: process.env.TRAVIS_BUILD_NUMBER
         },
         capabilities: [{
             browser: 'Chrome',

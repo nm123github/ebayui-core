@@ -3,6 +3,8 @@
     "src/**/*.js"
   ],
   "exclude": [
+    ".cache",
+    ".marko-cli",
     "**/test",
     "**/mock",
     "demo",
