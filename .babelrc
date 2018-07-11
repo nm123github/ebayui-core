@@ -1,4 +1,9 @@
 {
     "presets": ["env"],
-    "plugins": ["transform-object-assign"]
+    "plugins": ["transform-object-assign"],
+    "env": {
+        "test": {
+            "plugins": ["istanbul"]
+        }
+    }
 }
