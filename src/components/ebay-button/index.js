@@ -44,6 +44,7 @@ function getTemplateData(state, input) {
         classes.push(input.class);
     }
 
+    model.renderBody = input.renderBody;
     model.tag = tag;
     model.classes = classes;
     model.disabled = state.disabled;
