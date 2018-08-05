@@ -74,10 +74,16 @@ function getInitialState(input) {
         isCheckbox,
         isFake,
         label: input.label,
+        icon: input.icon,
+        iconTag: input.iconTag && input.iconTag.renderBody,
+        accessibilityText: input.accessibilityText,
+        noToggleIcon: input.noToggleIcon,
         class: input.class,
         reverse: Boolean(input.reverse),
         fixWidth: Boolean(input.fixWidth),
         borderless: Boolean(input.borderless),
+        size: input.size,
+        priority: input.priority,
         expanded: false,
         htmlAttributes: processHtmlAttributes(input),
         items,
@@ -88,7 +94,6 @@ function getInitialState(input) {
 function getTemplateData(state) {
     const menuClass = [state.class, 'expander'];
     const itemsClass = [contentClass];
-    const buttonClass = [mainButtonClass];
 
     if (state.isFake) {
         menuClass.push('fake-menu');
@@ -110,19 +115,21 @@ function getTemplateData(state) {
         }
     }
 
-    if (state.borderless) {
-        buttonClass.push('expand-btn--borderless');
-    }
-
     return {
         type: state.type,
         isRadio: state.isRadio,
         isCheckbox: state.isCheckbox,
         isNotCheckable: !state.isRadio && !state.isCheckbox,
         label: state.label,
+        icon: state.icon,
+        iconTag: state.iconTag,
+        accessibilityText: state.accessibilityText,
+        noToggleIcon: state.noToggleIcon,
         expanded: state.expanded,
+        size: state.size,
+        priority: state.priority,
         menuClass,
-        buttonClass,
+        buttonClass: state.borderless && 'expand-btn--borderless',
         itemsClass,
         role: !state.isFake ? 'menu' : null,
         items: state.items,

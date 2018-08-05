@@ -15,35 +15,38 @@ function getTemplateData(state, input) {
     const priority = input.priority || 'secondary';
     const size = input.size;
     const fluid = input.fluid;
-    let classes = ['btn'];
+    let variant = input.variant;
     const model = {};
     let tag;
-
-    if (priority === 'primary' || priority === 'secondary') {
-        classes.push(`btn--${priority}`);
-    }
-
-    if (size === 'small' || size === 'large') {
-        classes.push(`btn--${size}`);
-    }
-
-    if (fluid) {
-        classes.push('btn--fluid');
-    }
+    let mainClass = 'btn';
 
     if (href) {
+        variant = 'fake';
         tag = 'a';
         model.href = href;
-        classes = classes.map(c => `fake-${c}`); // assumes all classes use the skin btn prefix
     } else {
         tag = 'button';
     }
 
-    // must be after other class processing
-    if (input.class) {
-        classes.push(input.class);
+    if (href || variant === 'expand' || variant === 'cta') {
+        mainClass = `${variant}-${mainClass}`;
     }
 
+    const classes = [mainClass, input.class];
+
+    if (priority === 'primary' || priority === 'secondary') {
+        classes.push(`${mainClass}--${priority}`);
+    }
+
+    if (size === 'small' || size === 'large') {
+        classes.push(`${mainClass}--${size}`);
+    }
+
+    if (fluid) {
+        classes.push(`${mainClass}--fluid`);
+    }
+
+    model.renderBody = input.renderBody;
     model.tag = tag;
     model.classes = classes;
     model.disabled = state.disabled;
@@ -66,7 +69,7 @@ function handleClick(originalEvent) {
  */
 function handleKeydown(e) {
     eventUtils.handleActionKeydown(e, () => {
-        this.handleClick();
+        this.handleClick(e);
     });
 }
 

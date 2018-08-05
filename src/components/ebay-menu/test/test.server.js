@@ -1,5 +1,6 @@
 const expect = require('chai').expect;
 const testUtils = require('../../../common/test-utils/server');
+const transformer = require('../transformer');
 const mock = require('../mock');
 
 const labelSelector = '.expand-btn__cell > span:not(.expand-btn__icon)';
@@ -91,11 +92,35 @@ describe('menu', () => {
         expect($('.expand-btn.expand-btn--borderless').length).to.equal(0);
     });
 
+    test('renders with size=small', context => {
+        const input = { size: 'small' };
+        const $ = testUtils.getCheerio(context.render(input));
+        expect($('.expand-btn.expand-btn--small').length).to.equal(1);
+    });
+
+    test('renders with priority=primary', context => {
+        const input = { priority: 'primary' };
+        const $ = testUtils.getCheerio(context.render(input));
+        expect($('.expand-btn.expand-btn--primary').length).to.equal(1);
+    });
+
     test('renders without label', context => {
         const input = { label: '' };
         const $ = testUtils.getCheerio(context.render(input));
         expect($(labelSelector).length).to.equal(0);
-        expect($('.expand-btn__icon').length).to.equal(1);
+        expect($('svg.expand-btn__icon').length).to.equal(1);
+    });
+
+    test('renders with icon', context => {
+        const input = { icon: 'settings', iconTag: { renderBody: mock.iconRenderBody } };
+        const $ = testUtils.getCheerio(context.render(input));
+        expect($('div.expand-btn__icon').text()).to.equal('icon');
+    });
+
+    test('renders without toggle icon', context => {
+        const input = { noToggleIcon: true };
+        const $ = testUtils.getCheerio(context.render(input));
+        expect($('svg.expand-btn__icon').length).to.equal(0);
     });
 
     test('handles pass-through html attributes', context => {
@@ -148,5 +173,23 @@ describe('menu-item', () => {
 
     test('handles custom class', context => {
         testUtils.testCustomClass(context, '.menu__item', 'items');
+    });
+});
+
+describe('transformer', () => {
+    const componentPath = '../index.js';
+
+    test('transforms an icon attribute into a tag', () => {
+        const tagString = '<ebay-menu icon="settings"/>';
+        const { el } = testUtils.runTransformer(transformer, tagString, componentPath);
+        const { body: { array: [iconEl] } } = el;
+        expect(iconEl.tagName).to.equal('ebay-menu:icon');
+    });
+
+    test('does not transform when icon attribute is missing', () => {
+        const tagString = '<ebay-menu/>';
+        const { el } = testUtils.runTransformer(transformer, tagString, componentPath);
+        const { body: { array: [iconEl] } } = el;
+        expect(iconEl).to.equal(undefined);
     });
 });

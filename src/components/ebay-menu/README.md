@@ -18,11 +18,16 @@ Name | Type | Stateful | Description
 --- | --- | --- | ---
 `class` | String | No | custom class
 `label` | String | Yes | button label
+`icon` | String | No | name of an `<ebay-icon>` to show to the left of the label
+`accessibility-text` | String | No | accessibility text for the button, especially for cases without label text
+`no-toggle-icon` | Boolean | No | whether to hide the chevron toggle icon
 `expanded` | Boolean | Yes | whether content is expanded (Note: not supported as initial attribute)
 `type` | String | No | Can be "fake" / "radio" / "checkbox"
 `reverse` | Boolean | No | expand menu flyout to the left
 `fix-width` | Boolean | No | constrain items container width to button width
 `borderless` | Boolean | No | whether button has borders
+`size` | String | No | button size, "small" or "large" (default: medium)
+`priority` | String | No | button priority, "primary" / "secondary" (default) / "none"
 `checked` (radio) | Number | Yes | will set the corresponding index item to `checked` state and use the `aria-checked` attribute in markup
 
 ### ebay-menu Events

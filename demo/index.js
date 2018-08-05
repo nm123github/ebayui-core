@@ -1,5 +1,6 @@
 require('marko/node-require').install();
 const fs = require('fs');
+const path = require('path');
 const lasso = require('lasso');
 const express = require('express');
 const highlight = require('gh-highlight');
@@ -8,6 +9,7 @@ const demoUtils = require('./utils.js');
 const template = require('./template.marko');
 
 const app = express();
+const defaultComponentRoute = 'ebay-button';
 
 let transforms;
 if (process.env.NODE_ENV === 'production') {
@@ -24,24 +26,41 @@ app.use(require('lasso/middleware').serveStatic());
 app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
-    res.redirect(301, '/ebay-button');
+    res.redirect(301, '/ds6');
 });
 
-app.get('/:component?', (req, res) => {
+app.get('/ds4', (req, res) => {
+    res.redirect(301, `/ds4/${defaultComponentRoute}`);
+});
+
+app.get('/ds6', (req, res) => {
+    res.redirect(301, `/ds6/${defaultComponentRoute}`);
+});
+
+app.get('/:designSystem/:component?', (req, res) => {
     const name = req.params.component;
-    const componentsPath = `${__dirname}/../src/components`;
-    const examplesPath = `${componentsPath}/${name}/examples`;
+    const componentsPath = path.join(__dirname, '/../src/components');
+    const componentPath = path.join(componentsPath, name);
+    const examplesPath = path.join(componentPath, 'examples');
     const model = {
         name: req.params.component,
-        examples: fs.readdirSync(examplesPath).map(example => ({
-            num: parseInt(example.split('-')[0]),
-            name: example.split('-').slice(1, example.length).join(' '),
-            code: highlight.sync(fs.readFileSync(`${examplesPath}/${example}/template.marko`, 'utf8'), 'marko'),
-            sources: [`${componentsPath}/${name}`, examplesPath, `${examplesPath}/${example}`],
-            path: `${examplesPath}/${example}`
-        })).filter(demoUtils.isDirectory),
+        examples: fs.readdirSync(examplesPath).map(example => {
+            const examplePath = path.join(examplesPath, example);
+            const exampleTemplatePath = path.join(examplePath, 'template.marko');
+            return {
+                num: parseInt(example.split('-')[0]),
+                name: example.split('-').slice(1, example.length).join(' '),
+                code: highlight.sync(fs.readFileSync(exampleTemplatePath, 'utf8'), 'marko'),
+                sources: [componentPath, examplePath],
+                templatePath: exampleTemplatePath,
+                template: require(exampleTemplatePath)
+            };
+        }).filter(demoUtils.isDirectory),
         components: demoUtils.getComponentsWithExamples('src')
     };
+    const md = new MobileDetect(req.headers['user-agent']);
+    const dsFlag = req.params.designSystem === 'ds6' ? 'skin-ds6' : '';
+    const lassoFlags = [];
 
     // allow .only in example folder name
     model.examples.some((example) => {
@@ -51,10 +70,11 @@ app.get('/:component?', (req, res) => {
         }
     });
 
+    model.dependencies = model.examples.map(example => example.templatePath);
+
     req.model = model;
 
-    const md = new MobileDetect(req.headers['user-agent']);
-    const lassoFlags = ['skin-ds6'];
+    lassoFlags.push(dsFlag);
     if (md.mobile() || md.tablet()) {
         lassoFlags.push('touch');
     } else {
